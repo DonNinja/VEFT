@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
-namespace Technical_Radiation
+namespace TechnicalRadiation.WebApi
 {
     public class Startup
     {
@@ -30,7 +30,7 @@ namespace Technical_Radiation
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Technical_Radiation", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechnicalRadiation.WebApi", Version = "v1" });
             });
         }
 
@@ -41,7 +41,7 @@ namespace Technical_Radiation
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Technical_Radiation v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TechnicalRadiation.WebApi v1"));
             }
 
             app.UseHttpsRedirection();

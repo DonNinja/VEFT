@@ -1,6 +1,6 @@
 using System;
 
-namespace Technical_Radiation
+namespace TechnicalRadiation.WebApi
 {
     public class WeatherForecast
     {

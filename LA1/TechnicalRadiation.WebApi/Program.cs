@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Technical_Radiation
+namespace TechnicalRadiation.WebApi
 {
     public class Program
     {
