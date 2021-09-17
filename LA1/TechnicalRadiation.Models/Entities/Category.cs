@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TechnicalRadiation.Models.Entities {
     public class Category {
@@ -6,8 +7,9 @@ namespace TechnicalRadiation.Models.Entities {
         public string Name { get; set; }
         public string Slug { get; set; }
         // Don't know if we need this
-        // ModifiedBy (code-generated)
-        // CreatedDate (code-generated)
-        // ModifiedDate (code-generated) 
+        public string ModifiedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
+        public ICollection<NewsItem> NewsItems { get; set; }
     }
 }

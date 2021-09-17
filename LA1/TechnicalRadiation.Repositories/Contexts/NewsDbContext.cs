@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using TechnicalRadiation.Models.Entities;
+using TechnicalRadiation.Repositories.Interfaces;
 
 namespace TechnicalRadiation.Repositories.Contexts
 {
@@ -9,19 +12,9 @@ namespace TechnicalRadiation.Repositories.Contexts
         : base(options)
         { }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Author>()
-                .HasOne(a => a.Name);
-                // .WithMany(u => u.MessagesSent);
-
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.UserTo)
-                .WithMany(u => u.MessagesReceived);
-        }
-
-        public DbSet<User> Users { get; set; }
-        public DbSet<Message> Messages { get; set; }
-        public DbSet<JwtToken> JwtTokens { get; set; }
+        public DbSet<Author> Authors { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<NewsItem> NewsItems { get; set; }
+        public DbSet<NewsItem> NewsItemsDetails { get; set; }
     }
 }
