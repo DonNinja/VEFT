@@ -7,6 +7,7 @@ using TechnicalRadiation.Repositories.Interfaces;
 using System.Linq;
 using TechnicalRadiation.Models;
 using TechnicalRadiation.Models.Extensions;
+using Microsoft.Extensions.Primitives;
 
 namespace TechnicalRadiation.Services.Implementations
 {
@@ -24,13 +25,6 @@ namespace TechnicalRadiation.Services.Implementations
         public IEnumerable<NewsItemDto> GetAllNewsItems()
         {
             var temp = _newsItemRepository.GetAllNewsItems().ToList();
-            foreach (var n in temp)
-            {
-                n.Links.AddReference("self", new { href = $"/api/{n.Id}" });
-                n.Links.AddReference("edit", new { href = $"/api/{n.Id}" });
-                n.Links.AddReference("delete", new { href = $"/api/{n.Id}" });
-            }
-
             return temp;
 
 
@@ -39,7 +33,6 @@ namespace TechnicalRadiation.Services.Implementations
         public IEnumerable<NewsItemDetailDto> GetAllNewsItemsDetails()
         {
             var temp = _newsItemRepository.GetAllNewsItemsDetails().ToList();
-
             return temp;
         }
 
@@ -69,23 +62,38 @@ namespace TechnicalRadiation.Services.Implementations
 
         }
 
+        public IEnumerable<NewsItemDto> GetAuthorNewsItems(int id)
+        {
+            // if (!_authorRepository.DoesExist(id))
+            // {
+            //     throw new ResourceNotFoundException();
+            // }
+            var a = _newsItemRepository.GetAuthorNewsItems(id);
+            return a;
+        }
+
         public int CreateNewsItem(NewsItemInputModel nItem)
         {
             return _newsItemRepository.CreateNewsItem(nItem);
         }
-        public bool UpdateNewsItemById(int id, NewsItemInputModel uModel)
+        public void UpdateNewsItemById(int id, NewsItemInputModel uModel)
         {
             if (!_newsItemRepository.DoesExist(id))
             {
                 throw new ResourceNotFoundException();
             }
 
-            return _newsItemRepository.UpdateNewsItemById(uModel);
+            _newsItemRepository.UpdateNewsItemById(id, uModel);
         }
 
-        public NewsItemDetailDto DeleteNewsItemById(int id)
+        public void DeleteNewsItemById(int id)
         {
-            return _newsItemRepository.DeleteNewsItemById(id);
+            _newsItemRepository.DeleteNewsItemById(id);
+        }
+
+        public bool IsValidToken(StringValues stringValues)
+        {
+            return "SecretToken" == stringValues;
         }
     }
 

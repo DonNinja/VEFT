@@ -20,65 +20,111 @@ namespace TechnicalRadiation.Repositories.Implementations
 
         public IEnumerable<NewsItemDto> GetAllNewsItems()
         {
-            return _dbContext.NewsItems.Select(n => new NewsItemDto
+            var newsItems = _dbContext.NewsItems;
+            List<NewsItemDetailDto> withLinks = new List<NewsItemDetailDto>();
+            List<NewsItemDto> withLinksDto = new List<NewsItemDto>();
+            foreach (var x in withLinks)
             {
-                Id = n.Id,
-                Title = n.Title,
-                ImgSource = n.ImgSource,
-                ShortDescription = n.ShortDescription
-            });
+                withLinksDto.Add(new NewsItemDto {
+                    Id = x.Id,
+                    Title= x.Title,
+                    ImgSource= x.ImgSource,
+                    ShortDescription= x.ShortDescription,
+                    Links= x.Links
+                });
+
+            }
+            return withLinksDto;
         }
 
         public IEnumerable<NewsItemDetailDto> GetAllNewsItemsDetails()
         {
-            var x = _dbContext.NewsItemsDetails.Include(newsItem => newsItem.Authors);
-
-            var dtos = x.Select(n => new NewsItemDetailDto{
-                Id = n.Id,
-                Title = n.Title,
-                ImgSource = n.ImgSource,
-                ShortDescription = n.ShortDescription,
-                LongDescription = n.LongDescription,
-                PublishDate = n.PublishDate
-            }).ToList();
-
+            var x = _dbContext.NewsItemsDetails.Include(newsItem => newsItem.Authors).Include(newsItem => newsItem.Categories);
             List<NewsItemDetailDto> outplst = new List<NewsItemDetailDto>();
-
             foreach (var nwsi in x )
             {
-                var auths = nwsi.Authors.ToList();
-                Dictionary<string, string> test = new Dictionary<string, string>();
-                foreach (var ent in auths)
-                {
-                    test.Add("href", $"/api/authors/{ent.Id}");
-                }
-                List<Dictionary<string, string>> tmpDct = new List<Dictionary<string, string>>();
-                tmpDct.Add(test);
-                var currDto = new NewsItemDetailDto{
-                    Id = nwsi.Id,
-                    Title = nwsi.Title,
-                    ImgSource = nwsi.ImgSource,
-                    ShortDescription = nwsi.ShortDescription,
-                    LongDescription = nwsi.LongDescription,
-                    PublishDate = nwsi.PublishDate
-                };
-
-                currDto.Links.AddReference("self", new { href = $"/api/{currDto.Id}" });
-                currDto.Links.AddReference("edit", new { href = $"/api/{currDto.Id}" });
-                currDto.Links.AddReference("delete", new { href = $"/api/{currDto.Id}" });
-                currDto.Links.AddListReference("authors", tmpDct);
-                outplst.Add(currDto);
+                outplst.Add(AddHyperMediaToModel(nwsi));
             };
- 
             return outplst;
         } 
+
+        public IEnumerable<NewsItemDto> GetAuthorNewsItems(int id) {
+            var news = _dbContext.NewsItemsDetails
+            .Include(newsItem => newsItem.Authors)
+            .Include(newsItem => newsItem.Categories)
+            .Where(a => a.Authors.Any(al => al.Id == id));
+
+            List<NewsItemDetailDto> withLinks = new List<NewsItemDetailDto>();
+            List<NewsItemDto> withLinksDto = new List<NewsItemDto>();
+            foreach (var nwsi in news)
+            {
+                withLinks.Add(AddHyperMediaToModel(nwsi));
+            }
+
+            foreach (var x in withLinks)
+            {
+                withLinksDto.Add(new NewsItemDto {
+                    Id = x.Id,
+                    Title= x.Title,
+                    ImgSource= x.ImgSource,
+                    ShortDescription= x.ShortDescription,
+                    Links= x.Links
+                });
+
+            }
+            return withLinksDto;
+        }
 
         public bool DoesExist(int id) => _dbContext.NewsItems.Any(n => n.Id == id);
 
         public NewsItemDetailDto GetNewsItemById(int id)
         {
-            NewsItem newsItem = _dbContext.NewsItems.Include(newsItem => newsItem.Authors).FirstOrDefault<NewsItem>(n => n.Id == id);
+            NewsItem newsItem = _dbContext.NewsItems.Include(newsItem => newsItem.Authors).Include(newsItem => newsItem.Categories).FirstOrDefault<NewsItem>(n => n.Id == id);
             
+            return AddHyperMediaToModel(newsItem);
+        }
+
+        public int CreateNewsItem(NewsItemInputModel nItem)
+        {
+            var nextId = _dbContext.NewsItems.Last().Id + 1;
+            var x = new NewsItem
+            {
+                Id = nextId,
+                Title = nItem.Title,
+                ImgSource = nItem.ImgSource,
+                ShortDescription = nItem.ShortDescription,
+                LongDescription = nItem.LongDescription,
+                PublishDate = nItem.PublishDate,
+                ModifiedBy = "TechnicalRadiationAdmin",
+                CreatedDate = System.DateTime.Now,
+                ModifiedDate = System.DateTime.Now
+            };
+            _dbContext.NewsItems.Add(x);
+            _dbContext.SaveChanges();
+            return x.Id;
+        }
+
+        public void UpdateNewsItemById(int id, NewsItemInputModel uItem)
+        {
+            var nItem = _dbContext.NewsItems.FirstOrDefault(n => n.Id == id);
+            nItem.Title = uItem.Title;
+            nItem.ImgSource = uItem.ImgSource;
+            nItem.ShortDescription = uItem.ShortDescription;
+            nItem.LongDescription = uItem.LongDescription;
+            nItem.PublishDate = uItem.PublishDate;
+            nItem.ModifiedDate = System.DateTime.Now;
+
+            _dbContext.SaveChanges();
+        }
+
+        public void DeleteNewsItemById(int id)
+        {
+            var x = _dbContext.NewsItems.First(a => a.Id == id);
+            _dbContext.Remove(x);
+            _dbContext.SaveChanges();
+        }
+        public static NewsItemDetailDto AddHyperMediaToModel(NewsItem newsItem)
+        {
             var temp = new NewsItemDetailDto
             {
                 Id = newsItem.Id,
@@ -88,67 +134,15 @@ namespace TechnicalRadiation.Repositories.Implementations
                 LongDescription = newsItem.LongDescription,
                 PublishDate = newsItem.PublishDate
             };
-            
 
-
-            var auths = newsItem.Authors.ToList();
-            Dictionary<string, string> test = new Dictionary<string, string>();
-            foreach (var x in auths)
-            {
-                test.Add("href", $"/api/authors/{x.Id}");
-            }
-            List<Dictionary<string, string>> tmpp = new List<Dictionary<string, string>>();
-            tmpp.Add(test);
             temp.Links.AddReference("self", new { href = $"/api/{newsItem.Id}" });
             temp.Links.AddReference("edit", new { href = $"/api/{newsItem.Id}" });
             temp.Links.AddReference("delete", new { href = $"/api/{newsItem.Id}" });
-            temp.Links.AddListReference("authors", tmpp);
+            temp.Links.AddListReference("authors", newsItem.Authors.Select(a => new {href = $"/api/authors/{a.Id}"}));
+            temp.Links.AddListReference("categories", newsItem.Categories.Select(a => new {href = $"/api/categories/{a.Id}"}));
+            
             return temp;
         }
-
-        public int CreateNewsItem(NewsItemInputModel nItem)
-        {
-            var nextId = _dbContext.NewsItems.Count() + 1;
-            var x = new NewsItem
-            {
-                Id = nextId,
-                Title = nItem.Title,
-                ImgSource = nItem.ImgSource,
-                ShortDescription = nItem.ShortDescription,
-                LongDescription = nItem.LongDescription,
-                PublishDate = nItem.PublishDate,
-                ModifiedBy = "Technical Radiation Admin",
-                CreatedDate = System.DateTime.Now,
-                ModifiedDate = System.DateTime.Now
-            };
-            _dbContext.NewsItems.Add(x);
-            _dbContext.SaveChanges();
-            return x.Id;
-        }
-
-        public bool UpdateNewsItemById(NewsItemInputModel uItem)
-        {
-            _dbContext.Update(uItem);
-            _dbContext.SaveChanges();
-            return true;
-        }
-
-        public NewsItemDetailDto DeleteNewsItemById(int id)
-        {
-            var x = _dbContext.NewsItems.First(a => a.Id == id);
-            _dbContext.Remove(x);
-            _dbContext.SaveChanges();
-            return new NewsItemDetailDto
-            {
-                Id = x.Id,
-                Title = x.Title,
-                ImgSource = x.ImgSource,
-                ShortDescription = x.ShortDescription,
-                LongDescription = x.LongDescription,
-                PublishDate = x.PublishDate
-            };
-        }
     }
-
 }
 

@@ -1,6 +1,7 @@
 using TechnicalRadiation.Models.InputModels;
 using TechnicalRadiation.Models.Dtos;
 using System.Collections.Generic;
+using Microsoft.Extensions.Primitives;
 
 namespace TechnicalRadiation.Services.Interfaces
 {
@@ -10,8 +11,10 @@ namespace TechnicalRadiation.Services.Interfaces
         NewsItemDetailDto GetNewsItemById(int id);
         IEnumerable<NewsItemDto> GetNewsPages(int pageSize, int pageNumber);
         IEnumerable<NewsItemDetailDto> GetAllNewsItemsDetails();
+        IEnumerable<NewsItemDto> GetAuthorNewsItems(int id);
         int CreateNewsItem(NewsItemInputModel nItem);
-        bool UpdateNewsItemById(int id, NewsItemInputModel uItem);
-        NewsItemDetailDto DeleteNewsItemById(int id);
+        void UpdateNewsItemById(int id, NewsItemInputModel uItem);
+        void DeleteNewsItemById(int id);
+        bool IsValidToken(StringValues stringValues);
     }
 }

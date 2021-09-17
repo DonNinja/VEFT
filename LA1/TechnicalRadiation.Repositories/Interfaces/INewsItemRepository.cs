@@ -11,10 +11,11 @@ namespace TechnicalRadiation.Repositories.Interfaces
         IEnumerable<NewsItemDetailDto> GetAllNewsItemsDetails();
         bool DoesExist(int id);
         NewsItemDetailDto GetNewsItemById(int id);
+        IEnumerable<NewsItemDto> GetAuthorNewsItems(int id);
 
         int CreateNewsItem(NewsItemInputModel nItem);
-        bool UpdateNewsItemById(NewsItemInputModel uModel);
-        NewsItemDetailDto DeleteNewsItemById(int id);
+        void UpdateNewsItemById(int id, NewsItemInputModel uModel);
+        void DeleteNewsItemById(int id);
     }
 
 }

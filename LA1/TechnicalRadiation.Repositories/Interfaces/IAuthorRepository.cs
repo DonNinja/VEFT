@@ -7,9 +7,13 @@ namespace TechnicalRadiation.Repositories.Interfaces
     public interface IAuthorRepository
     {
         IEnumerable<AuthorDto> GetAllAuthors();
-        AuthorDto GetAuthorById(int id);
+        AuthorDetailDto GetAuthorById(int id);
         bool DoesExist(int id);
-        IEnumerable<NewsItemDto> GetAuthorNewsItems(int id);
+        int CreateAuthor(AuthorInputModel newAuthor);
+        void UpdateAuthorById(int id, AuthorInputModel newAuthor);
+    
+        void DeleteAuthorById(int id);
+        void LinkAuthorNewsItem(int authorId, int newsId);
     }
 
 }

@@ -4,9 +4,11 @@ using TechnicalRadiation.Models.Extensions;
 using TechnicalRadiation.Services.Interfaces;
 using TechnicalRadiation.Models.Exceptions;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TechnicalRadiation.WebApi.Controllers
 {
+    [AllowAnonymous]
     [ApiController]
     [Route("api/")]
     public class NewsItemController : ControllerBase
@@ -33,10 +35,19 @@ namespace TechnicalRadiation.WebApi.Controllers
             return Ok(_newsItemService.GetNewsItemById(id));
         }
 
+        [HttpGet]
+        [Route("authors/{id:int}/newsItems", Name = "GetAuthorNewsItems")]
+
+        public IActionResult GetAuthorNewsItems(int id) {
+            return Ok(_newsItemService.GetAuthorNewsItems(id));
+        }
+
         [HttpPost]
         [Route("")]
+		[Authorize]
         public IActionResult CreateNewsItem([FromBody] NewsItemInputModel nItem)
         {
+			if (!_newsItemService.IsValidToken(Request.Headers["Authorization"])) {return Unauthorized();}
             if (!ModelState.IsValid)
             {
                 var message = string.Join(" | ", ModelState.Values
@@ -45,31 +56,35 @@ namespace TechnicalRadiation.WebApi.Controllers
                 throw new ModelFormatException(message);
             }
 			int newid = _newsItemService.CreateNewsItem(nItem);
-            return Created("GetNewsItemById", GetNewsItemById(newid));
+            return CreatedAtRoute("GetNewsItemById", new { id = newid }, null);
+            // return Created("GetNewsItemById", GetNewsItemById(newid));
 
         }
         [HttpPut]
         [Route("{id:int}", Name = "UpdateNewsItemById")]
+		[Authorize]
         public IActionResult UpdateNewsItemById(int id, [FromBody] NewsItemInputModel nItem)
         {
+			if (!_newsItemService.IsValidToken(Request.Headers["Authorization"])) {return Unauthorized();}
             if (!ModelState.IsValid)
             {
                 var message = string.Join(" | ", ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
                 throw new ModelFormatException(message);
- 
             }
 
             _newsItemService.UpdateNewsItemById(id, nItem);
-            return Ok(nItem);
+            return NoContent();
         }
     
 		[HttpDelete]
 		[Route("{id:int}", Name = "DeleteNewsItemById")]
+		[Authorize]
 		public IActionResult DeleteNewsItemById(int id)
 		{
-			return Ok(_newsItemService.DeleteNewsItemById(id));
+            _newsItemService.DeleteNewsItemById(id);
+			return NoContent();
 		}
 	}
 }

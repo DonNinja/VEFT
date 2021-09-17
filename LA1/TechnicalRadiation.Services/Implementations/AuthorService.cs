@@ -5,6 +5,7 @@ using TechnicalRadiation.Services.Interfaces;
 using TechnicalRadiation.Repositories.Interfaces;
 using TechnicalRadiation.Models.Exceptions;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
 
 namespace TechnicalRadiation.Services.Implementations
 {
@@ -22,32 +23,42 @@ namespace TechnicalRadiation.Services.Implementations
             return _authorRepository.GetAllAuthors();
         }
 
-        public AuthorDto GetAuthorById(int id)
+        public AuthorDetailDto GetAuthorById(int id)
         {
             if (!_authorRepository.DoesExist(id))
             {
                 throw new ResourceNotFoundException();
             }
-            var a = _authorRepository.GetAuthorById(id);
-            return new AuthorDto
-            {
-                Id = a.Id,
-                Name = a.Name
-            };
-
+            return _authorRepository.GetAuthorById(id);
+        }
+        public int CreateAuthor(AuthorInputModel newAuthor) {
+            return _authorRepository.CreateAuthor(newAuthor);
         }
 
-        public IEnumerable<NewsItemDto> GetAuthorNewsItems(int id)
+        public void UpdateAuthorById(int id, AuthorInputModel newAuthor)
         {
-            if (!_authorRepository.DoesExist(id))
-            {
-                throw new ResourceNotFoundException();
-            }
-            var a = _authorRepository.GetAuthorNewsItems(id);
-            return a;
+            // if (!_authorRepository.DoesExist())
+            // {
+                // throw new ResourceNotFoundException();
+            // }
 
+            _authorRepository.UpdateAuthorById(id, newAuthor);
         }
 
+        public void DeleteAuthorById(int id)
+        {
+             _authorRepository.DeleteAuthorById(id);
+        }
+
+        public void LinkAuthorNewsItem(int authorId, int newsId)
+        {
+            _authorRepository.LinkAuthorNewsItem(authorId, newsId);
+        }
+
+        public bool IsValidToken(StringValues stringValues)
+        {
+            return "SecretToken" == stringValues;
+        }
     }
 
 }

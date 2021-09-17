@@ -13,7 +13,8 @@ using TechnicalRadiation.Services.Implementations;
 using TechnicalRadiation.Repositories.Interfaces;
 using TechnicalRadiation.Repositories.Implementations;
 using TechnicalRadiation.WebApi.ExceptionHandlerExtensions;
-
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TechnicalRadiation.WebApi
 {
@@ -30,6 +31,10 @@ namespace TechnicalRadiation.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddMvc(options => {
+                options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+            });
 
             
             services.AddDbContext<NewsDbContext>(options =>
